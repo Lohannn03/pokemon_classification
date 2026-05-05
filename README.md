@@ -270,7 +270,11 @@ pokemon_classification/
 ├── train.py
 ├── train_best_only.py
 ├── test.py
+├── predict.py
+├── gradcam.py
+├── utils.py
 ├── SplitData.py
+├── classes_txt_generation.py
 ├── requirements.txt
 ├── class_names.txt
 │
@@ -281,7 +285,7 @@ pokemon_classification/
 │   └── ...
 │
 ├── demo/
-│   ├── pokemon_classifier_demo.gif
+│   ├── pokemon_classifier_demo.mp4
 │   ├── gui_screenshot.png
 │   └── test_result.png
 │
@@ -290,7 +294,20 @@ pokemon_classification/
     ├── val/
     └── test/
 ```
+```markdown id="9cny2c"
+## Main Files
 
+| File | Description |
+|---|---|
+| `train.py` | Trains all experimental settings. |
+| `train_best_only.py` | Retrains only the final selected ResNet18 full fine-tuning model. |
+| `test.py` | Evaluates the final model on the test set. |
+| `predict.py` | Runs prediction on a single image. |
+| `app.py` | Runs the Streamlit GUI demo. |
+| `gradcam.py` | Contains Grad-CAM visualization code if used. |
+| `utils.py` | Contains helper functions. |
+| `SplitData.py` | Splits the dataset into train, validation, and test folders. |
+| `classes_txt_generation.py` | Generates the `class_names.txt` file. |
 ---
 
 ## 12. How to Run
