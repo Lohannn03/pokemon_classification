@@ -295,8 +295,8 @@ pokemon_classification/
     └── test/
 ```
 
-markdown id="9cny2c"
-## Main Files
+
+# Main Files
 
 | File | Description |
 |---|---|
