@@ -1,0 +1,23 @@
+# Dataset folders
+data/
+
+# Trained model files
+*.pth
+models/
+
+# Python cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Virtual environment
+.venv/
+venv/
+
+# Raw videos
+*.avi
+*.mov
+
+# OS files
+.DS_Store
+Thumbs.db
