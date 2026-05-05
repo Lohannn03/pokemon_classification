@@ -294,6 +294,7 @@ pokemon_classification/
     ├── val/
     └── test/
 ```
+
 ```markdown id="9cny2c"
 ## Main Files
 
@@ -308,6 +309,8 @@ pokemon_classification/
 | `utils.py` | Contains helper functions. |
 | `SplitData.py` | Splits the dataset into train, validation, and test folders. |
 | `classes_txt_generation.py` | Generates the `class_names.txt` file. |
+```
+
 ---
 
 ## 12. How to Run
