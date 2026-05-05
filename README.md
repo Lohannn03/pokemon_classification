@@ -252,7 +252,7 @@ Example GUI flow:
 
 Demo GIF:
 
-![Pokemon Classifier Demo](demo/pokemon_classifier_demo.gif)
+![Pokemon Classifier Demo](demo/pokemon_classifier_demo.mp4)
 
 GUI screenshot:
 
