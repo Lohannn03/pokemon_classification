@@ -1,3 +1,5 @@
+import os
+import shutil
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -7,9 +9,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import precision_recall_fscore_support
 
+
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using:", device)
+
 
 # Hyperparameters
 IMG_SIZE = 224
@@ -17,6 +21,11 @@ BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
 PATIENCE = 5
 EPOCHS = 20
+
+
+# Google Drive backup folder for Colab
+DRIVE_SAVE_DIR = "/content/drive/MyDrive/cv_hw6_pokemon/results"
+
 
 # Data augmentation and normalization
 train_transform = transforms.Compose([
@@ -31,6 +40,7 @@ train_transform = transforms.Compose([
     )
 ])
 
+
 # Validation transform
 val_transform = transforms.Compose([
     transforms.Resize((IMG_SIZE, IMG_SIZE)),
@@ -41,6 +51,7 @@ val_transform = transforms.Compose([
     )
 ])
 
+
 # Dataset and dataloader
 train_dataset = datasets.ImageFolder("data/train", transform=train_transform)
 val_dataset = datasets.ImageFolder("data/val", transform=val_transform)
@@ -49,24 +60,50 @@ train_loader = DataLoader(
     train_dataset,
     batch_size=BATCH_SIZE,
     shuffle=True,
-    num_workers=0
+    num_workers=2
 )
 
 val_loader = DataLoader(
     val_dataset,
     batch_size=BATCH_SIZE,
     shuffle=False,
-    num_workers=0
+    num_workers=2
 )
 
 num_classes = len(train_dataset.classes)
 
+
 # Save class names
-with open("class_names.txt", "w") as f:
+with open("class_names.txt", "w", encoding="utf-8") as f:
     for class_name in train_dataset.classes:
         f.write(class_name + "\n")
 
 print("Number of classes:", num_classes)
+
+
+def backup_results_to_drive():
+    if not os.path.exists("/content/drive/MyDrive"):
+        print("Google Drive is not mounted. Skipping Drive backup.")
+        return
+
+    os.makedirs(DRIVE_SAVE_DIR, exist_ok=True)
+
+    copied_files = []
+
+    for file_name in os.listdir("."):
+        if (
+            file_name.endswith(".pth")
+            or file_name.endswith(".png")
+            or file_name == "class_names.txt"
+        ):
+            src = file_name
+            dst = os.path.join(DRIVE_SAVE_DIR, file_name)
+            shutil.copy(src, dst)
+            copied_files.append(file_name)
+
+    print("Saved result files to Google Drive:")
+    for file_name in copied_files:
+        print(f"- {file_name}")
 
 
 # Build model
@@ -139,6 +176,62 @@ def make_display_name(model_name, pretrained, fine_tune_type):
 # Create file name
 def make_file_name(model_name, pretrained, fine_tune_type):
     return f"{model_name}_pre{pretrained}_ft{fine_tune_type}"
+
+
+# Plot one experiment learning curve
+def save_single_learning_curve(history, display_name, file_name):
+    plt.figure(figsize=(10, 4))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(history["train_loss"], label="train_loss")
+    plt.plot(history["val_loss"], label="val_loss")
+    plt.title(f"Loss Curve\n{display_name}")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.7)
+
+    plt.subplot(1, 2, 2)
+    plt.plot(history["val_acc"], label="val_acc")
+    plt.title(f"Validation Accuracy\n{display_name}")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.7)
+
+    plt.tight_layout()
+
+    single_curve_name = f"learning_curve_{file_name}.png"
+    plt.savefig(single_curve_name, dpi=150)
+    plt.show()
+    plt.close()
+
+    print(f"Saved single learning curve: {single_curve_name}")
+
+
+# Plot validation accuracy comparison
+def save_comparison_learning_curve(all_histories):
+    plt.figure(figsize=(12, 6))
+
+    for display_name, history in all_histories.items():
+        max_acc = max(history["val_acc"])
+        plt.plot(
+            history["val_acc"],
+            label=f"{display_name} (Max: {max_acc:.3f})"
+        )
+
+    plt.title("Validation Accuracy Comparison")
+    plt.xlabel("Epoch")
+    plt.ylabel("Validation Accuracy")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.7)
+    plt.tight_layout()
+
+    plt.savefig("learning_curve.png", dpi=150)
+    plt.show()
+    plt.close()
+
+    print("Saved comparison graph: learning_curve.png")
 
 
 # Train and validate model
@@ -240,10 +333,11 @@ def train_model(model, display_name, file_name):
             best_acc = acc
             best_val_loss = avg_val_loss
 
-            torch.save(model.state_dict(), f"best_{file_name}.pth")
+            model_path = f"best_{file_name}.pth"
+            torch.save(model.state_dict(), model_path)
 
             print(
-                f"Best model saved "
+                f"Best model saved: {model_path} "
                 f"(best_acc={best_acc:.4f}, best_val_loss={best_val_loss:.4f})"
             )
 
@@ -274,19 +368,20 @@ def train_model(model, display_name, file_name):
     return history, best_acc, best_val_loss
 
 
-# Experiment settings
 if __name__ == "__main__":
+    # Experiment settings
     configs = [
-    ("resnet18", False, "all"),
-    ("resnet18", True, "fc"),
-    ("resnet18", True, "partial"),
-    ("resnet18", True, "all"),
-    ("resnet50", True, "partial"),
+        ("resnet18", False, "all"),
+        ("resnet18", True, "fc"),
+        ("resnet18", True, "partial"),
+        ("resnet18", True, "all"),
+        ("resnet50", True, "partial"),
     ]
 
     all_histories = {}
     final_results = []
 
+    # Run experiments
     for model_name, pretrained, fine_tune_type in configs:
         display_name = make_display_name(model_name, pretrained, fine_tune_type)
         file_name = make_file_name(model_name, pretrained, fine_tune_type)
@@ -310,6 +405,16 @@ if __name__ == "__main__":
             "Best Val Loss": best_val_loss
         })
 
+        save_single_learning_curve(
+            history=history,
+            display_name=display_name,
+            file_name=file_name
+        )
+
+        backup_results_to_drive()
+
+    save_comparison_learning_curve(all_histories)
+
     print("\n========== Final Results ==========")
 
     for result in final_results:
@@ -320,3 +425,5 @@ if __name__ == "__main__":
         )
 
     print("\nAll experiments finished.")
+
+    backup_results_to_drive()

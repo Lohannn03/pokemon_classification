@@ -2,7 +2,7 @@
 
 This project implements a Pokemon image classifier using transfer learning.  
 The final model is based on ResNet18 with pretrained ImageNet weights and full fine-tuning.  
-The project includes model training, experimental comparison, final test evaluation, and an interactive GUI demo.
+The project includes model training, experimental comparison, learning curves, final test evaluation, and an interactive GUI demo.
 
 ---
 
@@ -17,6 +17,7 @@ Main features:
 - Pokemon image classification with 150 classes
 - Transfer learning using ResNet18 and ResNet50
 - Five experimental settings for comparison
+- Learning curve visualization for each experiment
 - Final test evaluation with accuracy, precision, recall, and F1-score
 - Streamlit GUI demo with sample image gallery
 - Top-5 prediction probabilities
@@ -163,25 +164,53 @@ The best model checkpoint was saved based on validation accuracy and validation 
 
 ## 7. Experimental Results
 
-The following results were obtained from the five experimental settings.
+The following table summarizes the best validation performance from the five experimental settings.
 
 | Experiment | Best Accuracy | Best Validation Loss |
 |---|---:|---:|
 | ResNet18: Pretrained - False, Fine-tuning - All | 0.5059 | 1.9527 |
 | ResNet18: Pretrained - True, Fine-tuning - FC Only | 0.4963 | 3.0551 |
 | ResNet18: Pretrained - True, Fine-tuning - Partial | 0.9110 | 0.4536 |
-| ResNet18: Pretrained - True, Fine-tuning - All | 0.9250 | 0.3904 |
-| ResNet50: Pretrained - True, Fine-tuning - Partial | 0.9184 | 0.3034 |
+| ResNet18: Pretrained - True, Fine-tuning - All | 0.9390 | 0.3018 |
+| ResNet50: Pretrained - True, Fine-tuning - Partial | 0.9243 | 0.3147 |
 
 Among the five experimental settings, ResNet18 with pretrained weights and full fine-tuning achieved the highest validation accuracy. Therefore, it was selected as the final model for the GUI demo.
 
-ResNet50 with partial fine-tuning achieved the lowest validation loss, but its validation accuracy was slightly lower than ResNet18 full fine-tuning. Therefore, ResNet18 full fine-tuning was chosen as the final model because validation accuracy was the main selection criterion.
+The results show that transfer learning significantly improves performance compared with training from scratch. The FC-only setting performed poorly because the feature extractor was frozen and only the final classifier was trained. Partial fine-tuning improved performance by allowing the last convolutional block to adapt to Pokemon-specific features. Full fine-tuning achieved the best validation accuracy because all pretrained layers were updated for the target task.
 
 ---
 
-## 8. Final Model Retraining
+## 8. Learning Curves
 
-The final selected model was retrained using the following setting:
+The learning curves show the training loss, validation loss, and validation accuracy for each experimental setting.
+
+### ResNet18 - Scratch - Full Fine-tuning
+
+![ResNet18 Scratch Full Fine-tuning](demo/learning_curve_resnet18_preFalse_ftall.png)
+
+### ResNet18 - Pretrained - FC Only
+
+![ResNet18 Pretrained FC Only](demo/learning_curve_resnet18_preTrue_ftfc.png)
+
+### ResNet18 - Pretrained - Partial Fine-tuning
+
+![ResNet18 Pretrained Partial Fine-tuning](demo/learning_curve_resnet18_preTrue_ftpartial.png)
+
+### ResNet18 - Pretrained - Full Fine-tuning
+
+![ResNet18 Pretrained Full Fine-tuning](demo/learning_curve_resnet18_preTrue_ftall.png)
+
+### ResNet50 - Pretrained - Partial Fine-tuning
+
+![ResNet50 Pretrained Partial Fine-tuning](demo/learning_curve_resnet50_preTrue_ftpartial.png)
+
+The learning curves show that pretrained models converge much faster than the model trained from scratch. The pretrained full fine-tuning models also achieve higher validation accuracy and lower validation loss.
+
+---
+
+## 9. Final Model Retraining
+
+The final selected model used the following setting:
 
 ```text
 Model: ResNet18
@@ -189,14 +218,14 @@ Pretrained: True
 Fine-tuning: All layers
 ```
 
-Local retraining result:
+Latest validation result for the selected model:
 
 | Metric | Value |
 |---|---:|
-| Best Validation Accuracy | 0.9324 |
-| Best Validation Loss | 0.3530 |
+| Best Validation Accuracy | 0.9390 |
+| Best Validation Loss | 0.3018 |
 
-The final retrained model was saved as:
+The final model checkpoint was saved as:
 
 ```text
 best_resnet18_preTrue_ftall.pth
@@ -210,7 +239,7 @@ best_model.pth
 
 ---
 
-## 9. Final Test Result
+## 10. Final Test Result
 
 The final demo model was evaluated on the local test set.
 
@@ -224,11 +253,11 @@ The final demo model was evaluated on the local test set.
 The final model achieved a test accuracy of 94.33%.  
 This shows that the fine-tuned ResNet18 model can classify unseen Pokemon images with strong performance.
 
-Since the local dataset split may be different from the original Colab split, the final test result can be slightly different from the validation results reported in the experimental comparison.
+Since the local dataset split may be different from the Colab training split, the final test result can be slightly different from the validation results reported in the experimental comparison.
 
 ---
 
-## 10. GUI Demo
+## 11. Example Results and GUI Demo
 
 The GUI was implemented with Streamlit.
 
@@ -250,17 +279,21 @@ Example GUI flow:
 4. The prediction result appears in the result panel
 ```
 
-Demo GIF:
-
-![Pokemon Classifier Demo](demo/pokemon_classifier_demo.gif)
-
-GUI screenshot:
+### GUI Screenshot
 
 ![GUI Screenshot](demo/gui_screenshot.png)
 
+### Test Result Screenshot
+
+![Test Result](demo/test_result.png)
+
+### Demo Video
+
+[Pokemon Classifier Demo](demo/pokemon_classifier_demo.mp4)
+
 ---
 
-## 11. Project Structure
+## 12. Project Structure
 
 ```text
 pokemon_classification/
@@ -287,7 +320,12 @@ pokemon_classification/
 ├── demo/
 │   ├── pokemon_classifier_demo.mp4
 │   ├── gui_screenshot.png
-│   └── test_result.png
+│   ├── test_result.png
+│   ├── learning_curve_resnet18_preFalse_ftall.png
+│   ├── learning_curve_resnet18_preTrue_ftfc.png
+│   ├── learning_curve_resnet18_preTrue_ftpartial.png
+│   ├── learning_curve_resnet18_preTrue_ftall.png
+│   └── learning_curve_resnet50_preTrue_ftpartial.png
 │
 └── data/
     ├── train/
@@ -295,13 +333,12 @@ pokemon_classification/
     └── test/
 ```
 
-
 ### Main Files
 
 | File | Description |
 |---|---|
-| `train.py` | Trains all experimental settings. |
-| `train_best_only.py` | Retrains only the final selected ResNet18 full fine-tuning model. |
+| `train.py` | Trains all five experimental settings and saves learning curves. |
+| `train_best_only.py` | Retrains only the selected ResNet18 full fine-tuning model. |
 | `test.py` | Evaluates the final model on the test set. |
 | `predict.py` | Runs prediction on a single image. |
 | `app.py` | Runs the Streamlit GUI demo. |
@@ -310,10 +347,9 @@ pokemon_classification/
 | `SplitData.py` | Splits the dataset into train, validation, and test folders. |
 | `classes_txt_generation.py` | Generates the `class_names.txt` file. |
 
-
 ---
 
-## 12. How to Run
+## 13. How to Run
 
 ### 1. Install dependencies
 
@@ -353,7 +389,7 @@ python train_best_only.py
 
 ---
 
-## 13. Requirements
+## 14. Requirements
 
 ```text
 torch
@@ -373,7 +409,7 @@ opencv-python
 
 ---
 
-## 14. Model File
+## 15. Model File
 
 The trained model file is not included in this repository if the file size is too large.
 
@@ -403,7 +439,7 @@ Copy-Item best_resnet18_preTrue_ftall.pth best_model.pth -Force
 
 ---
 
-## 15. Discussion
+## 16. Discussion
 
 The experiments show that transfer learning is important for this task.
 
@@ -411,11 +447,13 @@ Training ResNet18 from scratch produced much lower validation accuracy compared 
 
 The best validation accuracy was achieved by ResNet18 with pretrained weights and full fine-tuning. This result suggests that updating the entire pretrained network helps the model learn more task-specific visual patterns.
 
+ResNet50 with partial fine-tuning also performed strongly, but it did not outperform ResNet18 full fine-tuning in validation accuracy. Therefore, ResNet18 full fine-tuning was selected as the final model.
+
 Some classes still have lower precision or recall. This can happen because some Pokemon have visually similar shapes, colors, or poses. In addition, several classes have only a small number of test samples, which can make per-class metrics unstable.
 
 ---
 
-## 16. Limitations
+## 17. Limitations
 
 This project has several limitations:
 
@@ -427,10 +465,10 @@ This project has several limitations:
 
 ---
 
-## 17. Conclusion
+## 18. Conclusion
 
 This project successfully implemented a Pokemon classifier using transfer learning.
 
-Among the tested settings, ResNet18 with pretrained ImageNet weights and full fine-tuning achieved the best validation accuracy. The final retrained model achieved 94.33% test accuracy on the local test set.
+Among the tested settings, ResNet18 with pretrained ImageNet weights and full fine-tuning achieved the best validation accuracy. The final model achieved 94.33% test accuracy on the local test set.
 
 The Streamlit GUI provides an easy way to test the classifier by uploading an image or selecting a sample image from the gallery. The final result demonstrates that transfer learning is effective for multi-class Pokemon image classification.
