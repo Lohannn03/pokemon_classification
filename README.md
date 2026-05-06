@@ -168,8 +168,8 @@ The following table summarizes the best validation performance from the five exp
 
 | Experiment | Best Accuracy | Best Validation Loss |
 |---|---:|---:|
-| ResNet18: Pretrained - False, Fine-tuning - All | 0.5059 | 1.9527 |
-| ResNet18: Pretrained - True, Fine-tuning - FC Only | 0.4963 | 3.0551 |
+| ResNet18: Pretrained - False, Fine-tuning - All | 0.4963 | 1.9527 |
+| ResNet18: Pretrained - True, Fine-tuning - FC Only | 0.5059 | 3.0551 |
 | ResNet18: Pretrained - True, Fine-tuning - Partial | 0.9110 | 0.4536 |
 | ResNet18: Pretrained - True, Fine-tuning - All | 0.9390 | 0.3018 |
 | ResNet50: Pretrained - True, Fine-tuning - Partial | 0.9243 | 0.3147 |
@@ -218,7 +218,7 @@ Pretrained: True
 Fine-tuning: All layers
 ```
 
-Latest validation result for the selected model:
+The model was selected based on the best validation performance during training.
 
 | Metric | Value |
 |---|---:|
@@ -241,7 +241,7 @@ best_model.pth
 
 ## 10. Final Test Result
 
-The final demo model was evaluated on the local test set.
+After selecting the best model based on validation performance, the final model was evaluated on the separate local test set.
 
 | Metric | Score |
 |---|---:|
@@ -289,7 +289,7 @@ Example GUI flow:
 
 ### Demo Video
 
-[Pokemon Classifier Demo](demo/pokemon_classifier_demo.mp4)
+[Pokemon Classifier Demo](demo/pokemon_classifier_demo.gif)
 
 ---
 
@@ -469,6 +469,6 @@ This project has several limitations:
 
 This project successfully implemented a Pokemon classifier using transfer learning.
 
-Among the tested settings, ResNet18 with pretrained ImageNet weights and full fine-tuning achieved the best validation accuracy. The final model achieved 94.33% test accuracy on the local test set.
+Among the tested settings, ResNet18 with pretrained ImageNet weights and full fine-tuning achieved the best validation accuracy of 93.90%. After model selection, The final model achieved 94.33% test accuracy on the separate local test set.
 
 The Streamlit GUI provides an easy way to test the classifier by uploading an image or selecting a sample image from the gallery. The final result demonstrates that transfer learning is effective for multi-class Pokemon image classification.
